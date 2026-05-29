@@ -1,0 +1,254 @@
+```html
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>유튜브 타자연습</title>
+
+<style>
+
+body{
+  margin:0;
+  background:#111;
+  color:white;
+  font-family:sans-serif;
+}
+
+.container{
+  display:flex;
+  height:100vh;
+}
+
+.main{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  padding:10px;
+}
+
+.top{
+  display:flex;
+  gap:10px;
+  margin-bottom:10px;
+}
+
+input{
+  flex:1;
+  padding:10px;
+  font-size:16px;
+}
+
+button{
+  padding:10px;
+  cursor:pointer;
+}
+
+#player{
+  width:100%;
+  height:400px;
+  background:black;
+}
+
+textarea{
+  flex:1;
+  margin-top:10px;
+  resize:none;
+  padding:10px;
+  font-size:18px;
+}
+
+.sidebar{
+  width:300px;
+  border-left:1px solid #333;
+  padding:10px;
+  overflow-y:auto;
+}
+
+.video-item{
+  background:#222;
+  padding:10px;
+  margin-bottom:10px;
+  cursor:pointer;
+}
+
+.video-item:hover{
+  background:#333;
+}
+
+.delete-btn{
+  margin-top:10px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="main">
+
+    <div class="top">
+      <input
+        type="text"
+        id="youtubeUrl"
+        placeholder="유튜브 URL 입력"
+      >
+
+      <button id="addBtn">추가</button>
+    </div>
+
+    <div id="player"></div>
+
+    <textarea
+      id="memo"
+      placeholder="여기에 받아쓰기"
+    ></textarea>
+
+  </div>
+
+  <div class="sidebar">
+    <h2>영상 목록</h2>
+
+    <div id="playlist"></div>
+  </div>
+
+</div>
+
+<script src="https://www.youtube.com/iframe_api"></script>
+
+<script>
+
+let player;
+
+let playlist =
+JSON.parse(localStorage.getItem("playlist")) || [];
+
+const playlistElement =
+document.getElementById("playlist");
+
+const addBtn =
+document.getElementById("addBtn");
+
+const youtubeUrlInput =
+document.getElementById("youtubeUrl");
+
+const memo =
+document.getElementById("memo");
+
+memo.value =
+localStorage.getItem("memo") || "";
+
+memo.addEventListener("input", () => {
+  localStorage.setItem("memo", memo.value);
+});
+
+function onYouTubeIframeAPIReady(){
+
+  player = new YT.Player("player", {
+    height:"400",
+    width:"100%",
+    videoId:""
+  });
+
+}
+
+function getVideoId(url){
+
+  const regExp =
+  /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/;
+
+  const match = url.match(regExp);
+
+  return match ? match[1] : null;
+
+}
+
+function savePlaylist(){
+
+  localStorage.setItem(
+    "playlist",
+    JSON.stringify(playlist)
+  );
+
+}
+
+function renderPlaylist(){
+
+  playlistElement.innerHTML = "";
+
+  playlist.forEach((video, index) => {
+
+    const div =
+    document.createElement("div");
+
+    div.className = "video-item";
+
+    div.textContent = video.url;
+
+    div.addEventListener("click", () => {
+      player.loadVideoById(video.videoId);
+    });
+
+    const deleteBtn =
+    document.createElement("button");
+
+    deleteBtn.textContent = "삭제";
+
+    deleteBtn.className = "delete-btn";
+
+    deleteBtn.addEventListener("click", (e) => {
+
+      e.stopPropagation();
+
+      playlist.splice(index,1);
+
+      savePlaylist();
+
+      renderPlaylist();
+
+    });
+
+    div.appendChild(document.createElement("br"));
+    div.appendChild(deleteBtn);
+
+    playlistElement.appendChild(div);
+
+  });
+
+}
+
+addBtn.addEventListener("click", () => {
+
+  const url = youtubeUrlInput.value;
+
+  const videoId = getVideoId(url);
+
+  if(!videoId){
+
+    alert("올바른 유튜브 URL이 아닙니다");
+
+    return;
+
+  }
+
+  playlist.push({
+    url,
+    videoId
+  });
+
+  savePlaylist();
+
+  renderPlaylist();
+
+  youtubeUrlInput.value = "";
+
+});
+
+renderPlaylist();
+
+</script>
+
+</body>
+</html>
+```
