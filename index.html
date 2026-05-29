@@ -1,15 +1,22 @@
 ```html
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
 <meta charset="UTF-8">
-<title>유튜브 타자연습</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>유튜브 받아쓰기</title>
 
 <style>
 
+*{
+  box-sizing:border-box;
+}
+
 body{
   margin:0;
-  background:#111;
+  background:#0f0f0f;
   color:white;
   font-family:sans-serif;
 }
@@ -23,60 +30,148 @@ body{
   flex:1;
   display:flex;
   flex-direction:column;
-  padding:10px;
+  padding:20px;
 }
 
 .top{
   display:flex;
   gap:10px;
-  margin-bottom:10px;
+  margin-bottom:15px;
 }
 
 input{
   flex:1;
-  padding:10px;
+  padding:14px;
   font-size:16px;
+  border:none;
+  border-radius:12px;
+  background:#1f1f1f;
+  color:white;
+  outline:none;
+}
+
+input::placeholder{
+  color:#999;
 }
 
 button{
-  padding:10px;
+  border:none;
+  border-radius:12px;
+  padding:14px 18px;
   cursor:pointer;
+  font-weight:bold;
+  color:white;
+  transition:0.2s;
+}
+
+button:hover{
+  opacity:0.9;
+}
+
+#addBtn{
+  background:#4d7cff;
 }
 
 #player{
   width:100%;
-  height:400px;
+  height:420px;
   background:black;
+  border-radius:16px;
+  overflow:hidden;
+}
+
+.memo-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-top:18px;
+  margin-bottom:10px;
+}
+
+.memo-title{
+  font-size:22px;
+  font-weight:bold;
+}
+
+#clearMemoBtn{
+  background:#ff4d4d;
 }
 
 textarea{
   flex:1;
-  margin-top:10px;
   resize:none;
-  padding:10px;
+  border:none;
+  outline:none;
+  border-radius:16px;
+  padding:18px;
+  background:#1a1a1a;
+  color:white;
   font-size:18px;
+  line-height:1.7;
+}
+
+textarea::placeholder{
+  color:#888;
 }
 
 .sidebar{
-  width:300px;
-  border-left:1px solid #333;
-  padding:10px;
+  width:320px;
+  background:#171717;
+  border-left:1px solid #2a2a2a;
+  padding:20px;
   overflow-y:auto;
+}
+
+.sidebar-title{
+  font-size:24px;
+  font-weight:bold;
+  margin-bottom:15px;
 }
 
 .video-item{
   background:#222;
-  padding:10px;
-  margin-bottom:10px;
+  border-radius:14px;
+  padding:12px;
+  margin-bottom:12px;
   cursor:pointer;
+  transition:0.2s;
 }
 
 .video-item:hover{
-  background:#333;
+  transform:scale(1.02);
+  background:#2d2d2d;
+}
+
+.video-url{
+  word-break:break-all;
+  font-size:14px;
+  line-height:1.5;
+  margin-bottom:10px;
 }
 
 .delete-btn{
-  margin-top:10px;
+  background:#444;
+  width:100%;
+}
+
+.empty{
+  color:#888;
+  line-height:1.6;
+}
+
+@media(max-width:900px){
+
+  .container{
+    flex-direction:column;
+  }
+
+  .sidebar{
+    width:100%;
+    height:300px;
+    border-left:none;
+    border-top:1px solid #2a2a2a;
+  }
+
 }
 
 </style>
@@ -89,16 +184,32 @@ textarea{
   <div class="main">
 
     <div class="top">
+
       <input
         type="text"
         id="youtubeUrl"
         placeholder="유튜브 URL 입력"
       >
 
-      <button id="addBtn">추가</button>
+      <button id="addBtn">
+        추가
+      </button>
+
     </div>
 
     <div id="player"></div>
+
+    <div class="memo-top">
+
+      <div class="memo-title">
+        메모장
+      </div>
+
+      <button id="clearMemoBtn">
+        모두 지우기
+      </button>
+
+    </div>
 
     <textarea
       id="memo"
@@ -108,9 +219,13 @@ textarea{
   </div>
 
   <div class="sidebar">
-    <h2>영상 목록</h2>
+
+    <div class="sidebar-title">
+      영상 목록
+    </div>
 
     <div id="playlist"></div>
+
   </div>
 
 </div>
@@ -136,17 +251,39 @@ document.getElementById("youtubeUrl");
 const memo =
 document.getElementById("memo");
 
+const clearMemoBtn =
+document.getElementById("clearMemoBtn");
+
 memo.value =
 localStorage.getItem("memo") || "";
 
 memo.addEventListener("input", () => {
-  localStorage.setItem("memo", memo.value);
+
+  localStorage.setItem(
+    "memo",
+    memo.value
+  );
+
+});
+
+clearMemoBtn.addEventListener("click", () => {
+
+  const ok = confirm(
+    "메모를 모두 삭제할까요?"
+  );
+
+  if(!ok) return;
+
+  memo.value = "";
+
+  localStorage.removeItem("memo");
+
 });
 
 function onYouTubeIframeAPIReady(){
 
   player = new YT.Player("player", {
-    height:"400",
+    height:"420",
     width:"100%",
     videoId:""
   });
@@ -177,6 +314,18 @@ function renderPlaylist(){
 
   playlistElement.innerHTML = "";
 
+  if(playlist.length === 0){
+
+    playlistElement.innerHTML = `
+      <div class="empty">
+        아직 추가된 영상이 없습니다.
+      </div>
+    `;
+
+    return;
+
+  }
+
   playlist.forEach((video, index) => {
 
     const div =
@@ -184,18 +333,27 @@ function renderPlaylist(){
 
     div.className = "video-item";
 
-    div.textContent = video.url;
-
     div.addEventListener("click", () => {
-      player.loadVideoById(video.videoId);
+
+      player.loadVideoById(
+        video.videoId
+      );
+
     });
+
+    const urlText =
+    document.createElement("div");
+
+    urlText.className = "video-url";
+
+    urlText.textContent = video.url;
 
     const deleteBtn =
     document.createElement("button");
 
-    deleteBtn.textContent = "삭제";
-
     deleteBtn.className = "delete-btn";
+
+    deleteBtn.textContent = "삭제";
 
     deleteBtn.addEventListener("click", (e) => {
 
@@ -209,7 +367,8 @@ function renderPlaylist(){
 
     });
 
-    div.appendChild(document.createElement("br"));
+    div.appendChild(urlText);
+
     div.appendChild(deleteBtn);
 
     playlistElement.appendChild(div);
@@ -220,13 +379,17 @@ function renderPlaylist(){
 
 addBtn.addEventListener("click", () => {
 
-  const url = youtubeUrlInput.value;
+  const url =
+  youtubeUrlInput.value.trim();
 
-  const videoId = getVideoId(url);
+  const videoId =
+  getVideoId(url);
 
   if(!videoId){
 
-    alert("올바른 유튜브 URL이 아닙니다");
+    alert(
+      "올바른 유튜브 URL이 아닙니다."
+    );
 
     return;
 
@@ -242,6 +405,16 @@ addBtn.addEventListener("click", () => {
   renderPlaylist();
 
   youtubeUrlInput.value = "";
+
+});
+
+youtubeUrlInput.addEventListener("keydown", (e) => {
+
+  if(e.key === "Enter"){
+
+    addBtn.click();
+
+  }
 
 });
 
