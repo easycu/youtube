@@ -1,179 +1,149 @@
-```html
 <!DOCTYPE html>
 <html lang="ko">
-
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>유튜브 받아쓰기</title>
+<title>Shorthand Master Pro - Article Mode</title>
 
 <style>
-
-*{
-  box-sizing:border-box;
+:root { 
+    --primary: #4a90e2; 
+    --accent: #2ecc71; 
+    --danger: #e74c3c;
+    --bg: #f5f7fa; 
 }
 
-body{
-  margin:0;
-  background:#0f0f0f;
-  color:white;
-  font-family:sans-serif;
+body {
+    font-family: 'Pretendard', sans-serif;
+    background: var(--bg);
+    display: flex;
+    justify-content: center;
+    padding: 20px;
 }
 
-.container{
-  display:flex;
-  height:100vh;
+.container {
+    width: 100%;
+    max-width: 850px;
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
 }
 
-.main{
-  flex:1;
-  display:flex;
-  flex-direction:column;
-  padding:20px;
+h1 { text-align: center; color: var(--primary); margin-bottom: 25px; }
+
+#article-list {
+    margin-top: 20px;
+    max-height: 300px;
+    overflow-y: auto;
+    background: #f0f4f8;
+    padding: 15px;
+    border-radius: 10px;
 }
 
-.top{
-  display:flex;
-  gap:10px;
-  margin-bottom:15px;
+.item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    background: white;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    transition: transform 0.1s, background 0.2s;
+}
+.item:hover { 
+    background: #fdfdfd;
+    transform: translateY(-1px);
 }
 
-input{
-  flex:1;
-  padding:14px;
-  font-size:16px;
-  border:none;
-  border-radius:12px;
-  background:#1f1f1f;
-  color:white;
-  outline:none;
+.article-info {
+    cursor: pointer;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
 
-input::placeholder{
-  color:#999;
+.article-title {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
 }
 
-button{
-  border:none;
-  border-radius:12px;
-  padding:14px 18px;
-  cursor:pointer;
-  font-weight:bold;
-  color:white;
-  transition:0.2s;
+.article-meta {
+    font-size: 13px;
+    color: #777;
 }
 
-button:hover{
-  opacity:0.9;
+.display-sentence {
+    font-size: 26px;
+    margin: 25px 0;
+    line-height: 1.8;
+    border: 2px dashed #ddd;
+    padding: 15px;
+    border-radius: 8px;
+    background: #fafbfc;
 }
 
-#addBtn{
-  background:#4d7cff;
+.display-sentence b {
+    background: var(--primary);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
 }
 
-#player{
-  width:100%;
-  height:420px;
-  background:black;
-  border-radius:16px;
-  overflow:hidden;
+#practice-input {
+    width: 100%;
+    font-size: 22px;
+    padding: 12px;
+    border: 2px solid var(--primary);
+    border-radius: 10px;
+    box-sizing: border-box;
+    outline: none;
 }
 
-.memo-top{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-top:18px;
-  margin-bottom:10px;
+.status-container {
+    display: flex;
+    justify-content: space-between;
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    padding: 0 5px;
 }
 
-.memo-title{
-  font-size:22px;
-  font-weight:bold;
+#progress { color: #555; }
+#accuracy { color: var(--accent); }
+
+.btn-group {
+    margin-top: 15px;
+    display: flex;
+    gap: 10px;
 }
 
-#clearMemoBtn{
-  background:#ff4d4d;
+.btn-center {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 15px;
 }
 
-textarea{
-  flex:1;
-  resize:none;
-  border:none;
-  outline:none;
-  border-radius:16px;
-  padding:18px;
-  background:#1a1a1a;
-  color:white;
-  font-size:18px;
-  line-height:1.7;
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.2s;
 }
 
-textarea::placeholder{
-  color:#888;
-}
-
-.sidebar{
-  width:320px;
-  background:#171717;
-  border-left:1px solid #2a2a2a;
-  padding:20px;
-  overflow-y:auto;
-}
-
-.sidebar-title{
-  font-size:24px;
-  font-weight:bold;
-  margin-bottom:15px;
-}
-
-.video-item{
-  background:#222;
-  border-radius:14px;
-  padding:12px;
-  margin-bottom:12px;
-  cursor:pointer;
-  transition:0.2s;
-}
-
-.video-item:hover{
-  transform:scale(1.02);
-  background:#2d2d2d;
-}
-
-.video-url{
-  word-break:break-all;
-  font-size:14px;
-  line-height:1.5;
-  margin-bottom:10px;
-}
-
-.delete-btn{
-  background:#444;
-  width:100%;
-}
-
-.empty{
-  color:#888;
-  line-height:1.6;
-}
-
-@media(max-width:900px){
-
-  .container{
-    flex-direction:column;
-  }
-
-  .sidebar{
-    width:100%;
-    height:300px;
-    border-left:none;
-    border-top:1px solid #2a2a2a;
-  }
-
-}
-
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover { background: #357abd; }
+.btn-accent { background: var(--accent); color: white; }
+.btn-accent:hover { background: #27ae60; }
+.btn-danger { background: var(--danger); color: white; }
+.btn-danger:hover { background: #c0392b; }
 </style>
 </head>
 
@@ -181,247 +151,232 @@ textarea::placeholder{
 
 <div class="container">
 
-  <div class="main">
+<h1>Shorthand Typing Master</h1>
 
-    <div class="top">
+<div id="admin-view">
+    <div class="btn-center">
+        <input type="file" id="file-input" accept=".txt" style="display:none" onchange="handleFileUpload(event)">
+        <button class="btn-primary" onclick="document.getElementById('file-input').click()">📄 글 추가 (.txt 업로드)</button>
+    </div>
+    <div id="article-list"></div>
+</div>
 
-      <input
-        type="text"
-        id="youtubeUrl"
-        placeholder="유튜브 URL 입력"
-      >
-
-      <button id="addBtn">
-        추가
-      </button>
-
+<div id="practice-view" style="display:none">
+    <h2 id="practice-headline" style="text-align:center; color:#555; margin-top:0; font-size:20px;"></h2>
+    
+    <div class="status-container">
+        <span id="progress">반복: 0 / 7</span>
+        <span id="accuracy">정확도: 100%</span>
     </div>
 
-    <div id="player"></div>
+    <div id="target-sentence" class="display-sentence" contenteditable="true"></div>
 
-    <div class="memo-top">
+    <input id="practice-input" placeholder="여기에 타이핑하세요" autocomplete="off">
 
-      <div class="memo-title">
-        메모장
-      </div>
-
-      <button id="clearMemoBtn">
-        모두 지우기
-      </button>
-
+    <div class="btn-group">
+        <button class="btn-primary" onclick="markAbbreviation()">선택 영역 약어 표시</button>
+        <button class="btn-danger" onclick="stopPractice()">중단 (목록으로)</button>
     </div>
-
-    <textarea
-      id="memo"
-      placeholder="여기에 받아쓰기"
-    ></textarea>
-
-  </div>
-
-  <div class="sidebar">
-
-    <div class="sidebar-title">
-      영상 목록
-    </div>
-
-    <div id="playlist"></div>
-
-  </div>
+</div>
 
 </div>
 
-<script src="https://www.youtube.com/iframe_api"></script>
-
 <script>
+// 글 목록 데이터 불러오기
+let articles = JSON.parse(localStorage.getItem('sh_articles')) || [];
 
-let player;
+let currentArticleIdx = -1;
+let currentSentenceIdx = -1;
+let repeat = 0;
+let pureTarget = "";
 
-let playlist =
-JSON.parse(localStorage.getItem("playlist")) || [];
+// 글 목록 화면 렌더링
+function renderArticleList() {
+    const list = document.getElementById('article-list');
+    if(!articles.length) {
+        list.innerHTML = '<p style="color:#999; text-align:center; padding:20px 0;">등록된 글이 없습니다.<br>상단의 버튼을 눌러 문장들이 포함된 .txt 파일을 업로드해 주세요.</p>';
+        return;
+    }
 
-const playlistElement =
-document.getElementById("playlist");
-
-const addBtn =
-document.getElementById("addBtn");
-
-const youtubeUrlInput =
-document.getElementById("youtubeUrl");
-
-const memo =
-document.getElementById("memo");
-
-const clearMemoBtn =
-document.getElementById("clearMemoBtn");
-
-memo.value =
-localStorage.getItem("memo") || "";
-
-memo.addEventListener("input", () => {
-
-  localStorage.setItem(
-    "memo",
-    memo.value
-  );
-
-});
-
-clearMemoBtn.addEventListener("click", () => {
-
-  const ok = confirm(
-    "메모를 모두 삭제할까요?"
-  );
-
-  if(!ok) return;
-
-  memo.value = "";
-
-  localStorage.removeItem("memo");
-
-});
-
-function onYouTubeIframeAPIReady(){
-
-  player = new YT.Player("player", {
-    height:"420",
-    width:"100%",
-    videoId:""
-  });
-
+    list.innerHTML = articles.map((article, i) => `
+        <div class="item">
+            <div class="article-info" onclick="startPractice(${i})">
+                <span class="article-title">📄 ${article.title}</span>
+                <span class="article-meta">총 ${article.sentences.length}개의 문장</span>
+            </div>
+            <button class="btn-danger" style="padding:6px 12px; font-size:13px;" onclick="deleteArticle(${i}, event)">삭제</button>
+        </div>
+    `).join('');
 }
 
-function getVideoId(url){
+// 텍스트 파일 업로드 및 분석 처리
+function handleFileUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
 
-  const regExp =
-  /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const text = e.target.result;
+        
+        // 엔터(줄바꿈) 기준으로 문장 분리 후 양끝 공백 제거, 빈 줄 제외
+        const lines = text.split(/\r?\n/).map(line => line.trim()).filter(line => line.length > 0);
+        
+        if (lines.length === 0) {
+            alert("파일 내에 유효한 문장이 존재하지 않습니다.");
+            return;
+        }
 
-  const match = url.match(regExp);
+        // 새 글 객체 생성 (문장별 연습 횟수 초기화)
+        const newArticle = {
+            title: file.name,
+            sentences: lines,
+            counts: Array(lines.length).fill(0)
+        };
 
-  return match ? match[1] : null;
-
+        articles.push(newArticle);
+        localStorage.setItem('sh_articles', JSON.stringify(articles));
+        
+        event.target.value = ''; // input 초기화
+        renderArticleList();
+    };
+    
+    // 한국어 깨짐 방지를 위해 UTF-8 지정
+    reader.readAsText(file, 'UTF-8');
 }
 
-function savePlaylist(){
+// 글 삭제
+function deleteArticle(i, event) {
+    event.stopPropagation(); // 부모 클릭 이벤트(연습 시작) 전파 방지
+    if(!confirm(`"${articles[i].title}" 글을 삭제하시겠습니까?`)) return;
 
-  localStorage.setItem(
-    "playlist",
-    JSON.stringify(playlist)
-  );
-
+    articles.splice(i, 1);
+    localStorage.setItem('sh_articles', JSON.stringify(articles));
+    renderArticleList();
 }
 
-function renderPlaylist(){
+// 연습 시작
+function startPractice(i){
+    currentArticleIdx = i;
+    const article = articles[currentArticleIdx];
+    if(!article || !article.sentences.length) return alert('선택한 글에 문장이 없습니다.');
 
-  playlistElement.innerHTML = "";
+    document.getElementById('admin-view').style.display = 'none';
+    document.getElementById('practice-view').style.display = 'block';
+    document.getElementById('practice-headline').innerText = `학습 중: ${article.title}`;
 
-  if(playlist.length === 0){
-
-    playlistElement.innerHTML = `
-      <div class="empty">
-        아직 추가된 영상이 없습니다.
-      </div>
-    `;
-
-    return;
-
-  }
-
-  playlist.forEach((video, index) => {
-
-    const div =
-    document.createElement("div");
-
-    div.className = "video-item";
-
-    div.addEventListener("click", () => {
-
-      player.loadVideoById(
-        video.videoId
-      );
-
-    });
-
-    const urlText =
-    document.createElement("div");
-
-    urlText.className = "video-url";
-
-    urlText.textContent = video.url;
-
-    const deleteBtn =
-    document.createElement("button");
-
-    deleteBtn.className = "delete-btn";
-
-    deleteBtn.textContent = "삭제";
-
-    deleteBtn.addEventListener("click", (e) => {
-
-      e.stopPropagation();
-
-      playlist.splice(index,1);
-
-      savePlaylist();
-
-      renderPlaylist();
-
-    });
-
-    div.appendChild(urlText);
-
-    div.appendChild(deleteBtn);
-
-    playlistElement.appendChild(div);
-
-  });
-
+    pickSentence();
 }
 
-addBtn.addEventListener("click", () => {
+// 연습 중단
+function stopPractice(){
+    document.getElementById('admin-view').style.display = 'block';
+    document.getElementById('practice-view').style.display = 'none';
+    currentArticleIdx = -1;
+    currentSentenceIdx = -1;
+    renderArticleList();
+}
 
-  const url =
-  youtubeUrlInput.value.trim();
+// 현재 글 내부에서 가중치(적게 연습한 문장 우선) 기반 랜덤 선택
+function pickSentence(){
+    const article = articles[currentArticleIdx];
+    let min = Math.min(...article.counts);
+    let cands = article.counts.map((c, i) => c === min ? i : -1).filter(i => i !== -1);
 
-  const videoId =
-  getVideoId(url);
+    currentSentenceIdx = cands[Math.floor(Math.random() * cands.length)];
+    repeat = 0;
+    loadSentence();
+}
 
-  if(!videoId){
+// 문장 로드 및 화면 표시
+function loadSentence(){
+    const article = articles[currentArticleIdx];
+    let raw = article.sentences[currentSentenceIdx];
 
-    alert(
-      "올바른 유튜브 URL이 아닙니다."
-    );
+    // 약어 태그 처리하여 화면 표시
+    document.getElementById('target-sentence').innerHTML = raw.replace(/,,(.*?),,/g, '<b>$1</b>');
 
-    return;
+    // 입력값 검증용: 약어 기호(,,)와 모든 공백을 제거한 순수 타겟 텍스트 생성
+    pureTarget = raw.replace(/,,/g, '').replace(/\s/g, '');
 
-  }
+    const inputField = document.getElementById('practice-input');
+    inputField.value = '';
+    document.getElementById('accuracy').innerText = "정확도: 100%";
+    document.getElementById('accuracy').style.color = 'var(--accent)';
+    
+    updateProgress();
+    inputField.focus();
+}
 
-  playlist.push({
-    url,
-    videoId
-  });
+// 타이핑 입력 실시간 체크 및 정확도 계산 (공백 제외)
+document.getElementById('practice-input').addEventListener('input', () => {
+    let inputVal = document.getElementById('practice-input').value;
+    let pureInput = inputVal.replace(/\s/g, ''); // 공백 제외 문자열
 
-  savePlaylist();
+    if (pureInput.length > 0) {
+        let matchCount = 0;
+        for (let i = 0; i < pureInput.length; i++) {
+            if (pureTarget[i] && pureInput[i] === pureTarget[i]) {
+                matchCount++;
+            }
+        }
+        let accuracy = Math.round((matchCount / pureInput.length) * 100);
+        document.getElementById('accuracy').innerText = `정확도: ${accuracy}%`;
+        
+        // 마지막 입력 글자가 틀렸을 때 경고 색상 피드백
+        if(pureInput[pureInput.length - 1] !== pureTarget[pureInput.length - 1]) {
+            document.getElementById('accuracy').style.color = 'var(--danger)';
+        } else {
+            document.getElementById('accuracy').style.color = 'var(--accent)';
+        }
+    } else {
+        document.getElementById('accuracy').innerText = "정확도: 100%";
+        document.getElementById('accuracy').style.color = 'var(--accent)';
+    }
 
-  renderPlaylist();
+    // 공백을 제외한 문장이 완벽히 일치할 때 다음 루프 또는 문장으로 이동
+    if(pureInput === pureTarget){
+        repeat++;
 
-  youtubeUrlInput.value = "";
-
+        if(repeat >= 7){
+            const article = articles[currentArticleIdx];
+            article.counts[currentSentenceIdx]++;
+            localStorage.setItem('sh_articles', JSON.stringify(articles));
+            pickSentence();
+        } else {
+            loadSentence();
+        }
+    }
 });
 
-youtubeUrlInput.addEventListener("keydown", (e) => {
+// 반복 진행도 업데이트
+function updateProgress(){
+    document.getElementById('progress').innerText = `반복: ${repeat} / 7`;
+}
 
-  if(e.key === "Enter"){
+// 🔥 약어 표시 (선택 영역 감지 및 갱신)
+function markAbbreviation(){
+    const sel = window.getSelection();
+    if(!sel.rangeCount) return;
 
-    addBtn.click();
+    const selected = sel.toString().trim();
+    if(!selected) return;
 
-  }
+    const article = articles[currentArticleIdx];
+    let raw = article.sentences[currentSentenceIdx];
+    let index = raw.indexOf(selected);
+    if(index === -1) return;
 
-});
+    // 해당 단어 앞뒤에 기호 삽입하여 문장 데이터 업데이트
+    let newText = raw.slice(0, index) + ',,' + selected + ',,' + raw.slice(index + selected.length);
+    article.sentences[currentSentenceIdx] = newText;
 
-renderPlaylist();
+    localStorage.setItem('sh_articles', JSON.stringify(articles));
+    loadSentence();
+}
 
+// 첫 시작 시 목록 화면 렌더링
+renderArticleList();
 </script>
 
 </body>
 </html>
-```
