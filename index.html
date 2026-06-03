@@ -165,7 +165,7 @@ button {
     <h2 id="practice-headline" style="text-align:center; color:#555; margin-top:0; font-size:20px;"></h2>
     
     <div class="status-container">
-        <span id="progress">반복: 0 / 7</span>
+        <span id="progress">반복: 0 / 5</span>
         <span id="accuracy">정확도: 100%</span>
     </div>
 
@@ -337,20 +337,32 @@ document.getElementById('practice-input').addEventListener('input', () => {
     if(pureInput === pureTarget){
         repeat++;
 
-        if(repeat >= 7){
+        // 판정 기준 7회에서 5회로 수정
+        if(repeat >= 5){
             const article = articles[currentArticleIdx];
             article.counts[currentSentenceIdx]++;
             localStorage.setItem('sh_articles', JSON.stringify(articles));
-            pickSentence();
+
+            // 모든 문장의 연습 횟수가 동일해졌는지 확인
+            let minCount = Math.min(...article.counts);
+            let maxCount = Math.max(...article.counts);
+            
+            // 모든 문장의 연습 횟수가 같고, 최소 1회 이상 학습했을 경우
+            if (minCount === maxCount && minCount > 0) {
+                alert(`🎉 축하합니다! "${article.title}" 글의 모든 문장 학습을 완료했습니다!`);
+                stopPractice(); // 연습을 중단하고 목록 화면으로 돌아감
+            } else {
+                pickSentence(); // 아직 학습이 남았다면 다음 문장 선택
+            }
         } else {
             loadSentence();
         }
     }
 });
 
-// 반복 진행도 업데이트
+// 반복 진행도 업데이트 (텍스트 5회로 수정)
 function updateProgress(){
-    document.getElementById('progress').innerText = `반복: ${repeat} / 7`;
+    document.getElementById('progress').innerText = `반복: ${repeat} / 5`;
 }
 
 // 🔥 약어 표시 (선택 영역 감지 및 갱신)
