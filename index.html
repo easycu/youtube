@@ -9,7 +9,7 @@
 :root { 
     --primary: #4a90e2;  /* 파란색 */
     --accent: #2ecc71;   /* 초록색 */
-    --warning: #e67e22;  /* 주황색 */
+    --warning: #e67e22;  /* 주황색 (약어 삭제) */
     --danger: #e74c3c;
     --bg: #f5f7fa; 
     --text: #333;
@@ -26,7 +26,7 @@ body {
 
 .container {
     width: 100%;
-    max-width: 900px; /* 통계 3열 배치를 위해 약간 넓힘 */
+    max-width: 900px;
     background: white;
     padding: 30px;
     border-radius: 15px;
@@ -152,7 +152,6 @@ button {
 .btn-danger { background: var(--danger); color: white; }
 .btn-danger:hover { background: #c0392b; }
 
-/* 🔥 새로 추가된 통계 화면용 스타일 */
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -259,7 +258,6 @@ button {
 </div>
 
 <script>
-// --- [기존 로직 유지 구간] 데이터 로드 및 뷰 전환 ---
 let articles = JSON.parse(localStorage.getItem('sh_articles')) || [];
 
 let currentArticleIdx = -1;
@@ -443,6 +441,7 @@ function updateProgress(){
     document.getElementById('progress').innerText = `반복: ${repeat} / 5`;
 }
 
+// 🔥 [알고리즘 수정] 인터벌(구간) 매핑 기반 약어 처리 함수
 function markAbbreviation(type){
     const sel = window.getSelection();
     if(!sel.rangeCount) return;
@@ -456,23 +455,93 @@ function markAbbreviation(type){
 
     const targetElement = document.getElementById('target-sentence');
     
+    // 화면에 보이는(순수 텍스트) 상태에서의 마우스 드래그 시작/끝 인덱스 계산
     const preSelectionRange = document.createRange();
     preSelectionRange.setStart(targetElement, 0);
     preSelectionRange.setEnd(startContainer, startOffset);
-    const offsetInRenderedText = preSelectionRange.toString().length; 
-
-    const rawTextStartIdx = currentRenderIdxToRawIdxMap[offsetInRenderedText];
+    
+    let startPureIdx = preSelectionRange.toString().length; 
+    let endPureIdx = startPureIdx + selectedText.length;
 
     const article = articles[currentArticleIdx];
     let rawText = article.sentences[currentSentenceIdx];
 
-    let delimiter = (type === 'blue') ? ',,' : '@@';
+    // 1. 현재 원본 문장에서 기호들을 추적하여 순수 텍스트 기준의 약어 구간(Intervals) 리스트 확보
+    let currentPureIdx = 0;
+    let currentRawIdx = 0;
+    let intervals = [];
+    
+    while (currentRawIdx < rawText.length) {
+        if (rawText.substring(currentRawIdx, currentRawIdx + 2) === ',,') {
+            let startPure = currentPureIdx;
+            currentRawIdx += 2;
+            let endRawIdx = rawText.indexOf(',,', currentRawIdx);
+            if (endRawIdx !== -1) {
+                let content = rawText.substring(currentRawIdx, endRawIdx);
+                intervals.push({ start: startPure, end: startPure + content.length, type: 'blue' });
+                currentPureIdx += content.length;
+                currentRawIdx = endRawIdx + 2;
+            } else {
+                currentRawIdx += 2;
+            }
+        } else if (rawText.substring(currentRawIdx, currentRawIdx + 2) === '@@') {
+            let startPure = currentPureIdx;
+            currentRawIdx += 2;
+            let endRawIdx = rawText.indexOf('@@', currentRawIdx);
+            if (endRawIdx !== -1) {
+                let content = rawText.substring(currentRawIdx, endRawIdx);
+                intervals.push({ start: startPure, end: startPure + content.length, type: 'green' });
+                currentPureIdx += content.length;
+                currentRawIdx = endRawIdx + 2;
+            } else {
+                currentRawIdx += 2;
+            }
+        } else {
+            currentPureIdx++;
+            currentRawIdx++;
+        }
+    }
 
-    const rawTextEndIdx = rawTextStartIdx + selectedText.length;
-    let newText = rawText.slice(0, rawTextStartIdx) + delimiter + selectedText + delimiter + rawText.slice(rawTextEndIdx);
-    article.sentences[currentSentenceIdx] = newText;
+    // 2. 새 약어와 겹치는 기존 구간을 정리하고 업데이트된 리스트 생성
+    let newInterval = { start: startPureIdx, end: endPureIdx, type: type };
+    let updatedIntervals = [];
+    
+    intervals.forEach(inv => {
+        // 완전 비중첩인 경우 유지
+        if (inv.end <= newInterval.start || inv.start >= newInterval.end) {
+            updatedIntervals.push(inv);
+        } else {
+            // 새 지정 영역과 겹치면 기존 것을 잘라내거나 없앰 (덮어쓰기 효과)
+            if (inv.start < newInterval.start) {
+                updatedIntervals.push({ start: inv.start, end: newInterval.start, type: inv.type });
+            }
+            if (inv.end > newInterval.end) {
+                updatedIntervals.push({ start: newInterval.end, end: inv.end, type: inv.type });
+            }
+        }
+    });
+    
+    updatedIntervals.push(newInterval);
+    updatedIntervals.sort((a, b) => a.start - b.start); // 시작 위치 기준 정렬
 
+    // 3. 기호가 모두 제거된 완벽한 순수 텍스트 추출
+    let pureText = rawText.replace(/,,|@@/g, '');
+    let lastIdx = 0;
+    let reconstructedRaw = "";
+    
+    // 4. 순수 텍스트에 정리된 구간 정보를 대입하여 새 원본 문장 깔끔하게 재조립
+    updatedIntervals.forEach(inv => {
+        reconstructedRaw += pureText.slice(lastIdx, inv.start);
+        let delim = (inv.type === 'blue') ? ',,' : '@@';
+        reconstructedRaw += delim + pureText.slice(inv.start, inv.end) + delim;
+        lastIdx = inv.end;
+    });
+    reconstructedRaw += pureText.slice(lastIdx);
+
+    // 5. 반영 및 리로드
+    article.sentences[currentSentenceIdx] = reconstructedRaw;
     localStorage.setItem('sh_articles', JSON.stringify(articles));
+    
     sel.removeAllRanges();
     loadSentence();
 }
@@ -490,8 +559,6 @@ function clearAbbreviations() {
     loadSentence();
 }
 
-// --- 🔥 [새로 추가된 로직] 통계 기능 구현 ---
-
 function showStats() {
     document.getElementById('admin-view').style.display = 'none';
     document.getElementById('stats-view').style.display = 'block';
@@ -508,11 +575,8 @@ function calculateAndRenderStats() {
     let greenFreq = {};
     let normalFreq = {};
 
-    // 1. 모든 글, 모든 문장을 순회하며 데이터 추출
     articles.forEach(article => {
         article.sentences.forEach(sentence => {
-            
-            // 파란색 추출 (,,단어,,)
             const blueMatches = sentence.match(/,,(.*?),,/g);
             if (blueMatches) {
                 blueMatches.forEach(match => {
@@ -521,7 +585,6 @@ function calculateAndRenderStats() {
                 });
             }
 
-            // 초록색 추출 (@@단어@@)
             const greenMatches = sentence.match(/@@(.*?)@@/g);
             if (greenMatches) {
                 greenMatches.forEach(match => {
@@ -530,9 +593,7 @@ function calculateAndRenderStats() {
                 });
             }
 
-            // 일반 단어 추출 (약어 기호 포함 단어들을 제거한 나머지 텍스트에서)
             let cleanedSentence = sentence.replace(/,,(.*?),,/g, ' ').replace(/@@(.*?)@@/g, ' ');
-            // 구두점 제거 및 띄어쓰기 기준 분리
             let words = cleanedSentence.replace(/[.,!?"'(){}[\]]/g, '').split(/\s+/);
             words.forEach(word => {
                 if (word.trim().length > 0) {
@@ -542,18 +603,16 @@ function calculateAndRenderStats() {
         });
     });
 
-    // 2. 객체를 배열로 변환하고 내림차순 정렬 후 Top 30 추출 함수
     function getTop30(freqObj) {
         return Object.entries(freqObj)
-            .sort((a, b) => b[1] - a[1]) // 빈도수(value) 기준 내림차순
-            .slice(0, 30);               // 상위 30개 자르기
+            .sort((a, b) => b[1] - a[1]) 
+            .slice(0, 30);               
     }
 
     const topBlue = getTop30(blueFreq);
     const topGreen = getTop30(greenFreq);
     const topNormal = getTop30(normalFreq);
 
-    // 3. 화면에 렌더링하는 헬퍼 함수
     function renderList(elementId, topArray, emptyMsg) {
         const ul = document.getElementById(elementId);
         if (topArray.length === 0) {
@@ -573,7 +632,6 @@ function calculateAndRenderStats() {
     renderList('stats-list-normal', topNormal, '일반 단어가 없습니다.');
 }
 
-// 첫 시작 시 목록 화면 렌더링
 renderArticleList();
 </script>
 
